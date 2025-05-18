@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>draft 1</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #0a0f1a;
+      color: #fff;
+    }
+    nav {
+      background: #1e2a38;
+      color: #fff;
+      display: flex;
+      padding: 1rem;
+      justify-content: space-around;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    nav a {
+      color: #00aaff;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+    }
+    .badge {
+      background-color: red;
+      color: white;
+      border-radius: 50%;
+      padding: 3px 7px;
+      font-size: 12px;
+      position: absolute;
+      top: 0.5rem;
+      right: 1rem;
+      display: none;
+    }
+    section {
+      display: none;
+      padding: 2rem;
+    }
+    section.active {
+      display: block;
+    }
+    form {
+      max-width: 600px;
+      margin: auto;
+      background: #1e2a38;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+    }
+    label {
+      display: block;
+      margin: 1rem 0 0.3rem;
+    }
+    input[type="text"], input[type="file"], textarea {
+      width: 100%;
+      padding: 0.6rem;
+      border: none;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+    }
+    button {
+      background: #00aaff;
+      border: none;
+      color: #fff;
+      padding: 0.7rem 1.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .profile-list {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .profile-card, .user-profile {
+      background: #1e2a38;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0, 170, 255, 0.2);
+      margin-top: 2rem;
+    }
+    .profile-card img, .user-profile img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 0.5rem;
+    }
+    a {
+      color: #00aaff;
+      text-decoration: none;
+    }
+    .flex-list {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 1rem;
+    }
+    .flex-list div {
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a id="nav-profile">Profile</a>
+    <a id="nav-match">Match <span class="badge" id="match-badge">!</span></a>
+    <a id="nav-about">About</a>
+  </nav>
+
+  <section id="section-profile" class="active">
+    <h2 id="profile-title">Create Your Profile</h2>
+    <form id="profile-form">
+      <label for="name">Name:</label>
+      <input type="text" id="name" required>
+
+      <label for="facebook">Facebook Profile URL:</label>
+      <input type="text" id="facebook" placeholder="https://facebook.com/yourprofile" required>
+
+      <label for="interests">Interests (comma-separated):</label>
+      <input type="text" id="interests" required>
+
+      <label for="preferences">Preferences (comma-separated):</label>
+      <input type="text" id="preferences" required>
+
+      <label for="picture">Profile Picture:</label>
+      <input type="file" id="picture" accept="image/*" required>
+
+      <button type="submit">Save Profile</button>
+    </form>
+    <div id="user-profile" class="user-profile" style="display:none;"></div>
+  </section>
+
+  <section id="section-match">
+    <h2>Your Matches</h2>
+    <ul class="profile-list" id="matches-list"></ul>
+  </section>
+
+  <section id="section-about">
+    <h2>About TS</h2>
+    <p>This dating prototype was created out of boredom by Ralph Thornville. Enjoy finding matches based on shared interests!</p>
+  </section>
+
+  <script>
+    const sections = {
+      profile: document.getElementById('section-profile'),
+      match: document.getElementById('section-match'),
+      about: document.getElementById('section-about')
+    };
+
+    document.getElementById('nav-profile').onclick = () => show('profile');
+    document.getElementById('nav-match').onclick = () => { show('match'); renderMatches(); document.getElementById('match-badge').style.display = 'none'; };
+    document.getElementById('nav-about').onclick = () => show('about');
+
+    function show(name) {
+      Object.values(sections).forEach(sec => sec.classList.remove('active'));
+      sections[name].classList.add('active');
+    }
+
+    const STORAGE_KEY = 'dating_profiles';
+    const CURRENT_USER_KEY = 'current_user';
+
+    function getProfiles() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    }
+    function saveProfiles(profiles) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+    }
+    function setCurrentUser(profile) {
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(profile));
+    }
+    function getCurrentUser() {
+      return JSON.parse(localStorage.getItem(CURRENT_USER_KEY));
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const reader = new FileReader();
+      const file = document.getElementById('picture').files[0];
+      if (!file) return alert('Please upload a profile picture.');
+
+      reader.onloadend = () => {
+        const profile = {
+          name: document.getElementById('name').value.trim(),
+          facebook: document.getElementById('facebook').value.trim(),
+          interests: document.getElementById('interests').value.split(',').map(i => i.trim().toLowerCase()),
+          preferences: document.getElementById('preferences').value.split(',').map(p => p.trim().toLowerCase()),
+          picture: reader.result
+        };
+
+        const profiles = getProfiles();
+        profiles.push(profile);
+        saveProfiles(profiles);
+        setCurrentUser(profile);
+        displayUserProfile(profile);
+
+        document.getElementById('profile-form').style.display = 'none';
+        document.getElementById('profile-title').textContent = `Welcome to ${profile.name}'s Connect!`;
+        document.getElementById('match-badge').style.display = 'inline-block';
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    function displayUserProfile(profile) {
+      const container = document.getElementById('user-profile');
+      container.style.display = 'block';
+      container.innerHTML = `
+        <img src="${profile.picture}" alt="${profile.name}'s picture">
+        <h3>${profile.name}</h3>
+        <div class="flex-list">
+          <div><strong>Interests:</strong><br>${profile.interests.join('<br>')}</div>
+          <div><strong>Preferences:</strong><br>${profile.preferences.join('<br>')}</div>
+        </div>
+      `;
+    }
+
+    function calculateMatch(a, b) {
+      const shared = a.interests.filter(i => b.interests.includes(i)).length;
+      const total = new Set([...a.interests, ...b.interests]).size;
+      return Math.round((shared / total) * 100);
+    }
+
+    function renderMatches() {
+      const user = getCurrentUser();
+      if (!user) return;
+
+      const profiles = getProfiles();
+      const matches = profiles
+        .filter(p => p.facebook !== user.facebook)
+        .map(p => ({ ...p, score: calculateMatch(user, p) }))
+        .filter(m => m.score > 0)
+        .sort((a, b) => b.score - a.score);
+
+      const container = document.getElementById('matches-list');
+      container.innerHTML = '';
+
+      if (matches.length === 0) {
+        container.innerHTML = '<li>No matches found.</li>';
+        return;
+      }
+
+      matches.forEach(m => {
+        const li = document.createElement('li');
+        li.className = 'profile-card';
+        li.innerHTML = `
+          <img src="${m.picture}" alt="${m.name}'s picture">
+          <h3>${m.name}</h3>
+          <p>Match: ${m.score}%</p>
+          <a href="${m.facebook}" target="_blank">View Facebook Profile</a>
+        `;
+        container.appendChild(li);
+      });
+    }
+
+    // On load, restore user profile
+    window.onload = () => {
+      const user = getCurrentUser();
+      if (user) {
+        displayUserProfile(user);
+        document.getElementById('profile-form').style.display = 'none';
+        document.getElementById('profile-title').textContent = `Welcome to RP Connect!`;
+      }
+    }
+  </script>
+</body>
+</html>
