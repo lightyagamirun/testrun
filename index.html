@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>draft 1</title>
+  <title>draft</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -145,8 +145,8 @@
   </section>
 
   <section id="section-about">
-    <h2>About TS</h2>
-    <p>This dating prototype was created out of boredom by Ralph Thornville. Enjoy finding matches based on shared interests!</p>
+    <h2>About the Creator</h2>
+    <p>This dating prototype was created by [Your Name]. Enjoy finding matches based on shared interests!</p>
   </section>
 
   <script>
@@ -183,6 +183,8 @@
 
     document.getElementById('profile-form').addEventListener('submit', e => {
       e.preventDefault();
+      if (getCurrentUser()) return alert("You already have a profile on this device.");
+
       const reader = new FileReader();
       const file = document.getElementById('picture').files[0];
       if (!file) return alert('Please upload a profile picture.');
@@ -193,7 +195,8 @@
           facebook: document.getElementById('facebook').value.trim(),
           interests: document.getElementById('interests').value.split(',').map(i => i.trim().toLowerCase()),
           preferences: document.getElementById('preferences').value.split(',').map(p => p.trim().toLowerCase()),
-          picture: reader.result
+          picture: reader.result,
+          id: Date.now()
         };
 
         const profiles = getProfiles();
@@ -261,13 +264,12 @@
       });
     }
 
-    // On load, restore user profile
     window.onload = () => {
       const user = getCurrentUser();
       if (user) {
         displayUserProfile(user);
         document.getElementById('profile-form').style.display = 'none';
-        document.getElementById('profile-title').textContent = `Welcome to RP Connect!`;
+        document.getElementById('profile-title').textContent = `Welcome to ${user.name}'s Connect!`;
       }
     }
   </script>
