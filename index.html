@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>draft</title>
+  <title>MatchMaker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -58,7 +58,7 @@
       display: block;
       margin: 1rem 0 0.3rem;
     }
-    input[type="text"], input[type="file"], textarea {
+    input[type="text"], input[type="file"] {
       width: 100%;
       padding: 0.6rem;
       border: none;
@@ -208,6 +208,7 @@
         document.getElementById('profile-form').style.display = 'none';
         document.getElementById('profile-title').textContent = `Welcome to ${profile.name}'s Connect!`;
         document.getElementById('match-badge').style.display = 'inline-block';
+        show('profile');
       };
 
       reader.readAsDataURL(file);
